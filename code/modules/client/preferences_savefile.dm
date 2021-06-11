@@ -140,6 +140,7 @@
 	READ_FILE(S["clientfps"], clientfps)
 	READ_FILE(S["tooltips"], tooltips)
 	READ_FILE(S["key_bindings"], key_bindings)
+	READ_FILE(S["custom_emotes"], custom_emotes)
 	READ_FILE(S["chem_macros"], chem_macros)
 
 	READ_FILE(S["mute_self_combat_messages"], mute_self_combat_messages)
@@ -151,7 +152,6 @@
 	READ_FILE(S["max_chat_length"], max_chat_length)
 	READ_FILE(S["see_chat_non_mob"], see_chat_non_mob)
 	READ_FILE(S["see_rc_emotes"], see_rc_emotes)
-
 
 	//try to fix any outdated data if necessary
 	if(needs_update >= 0)
@@ -183,6 +183,7 @@
 	tooltips		= sanitize_integer(tooltips, FALSE, TRUE, initial(tooltips))
 
 	key_bindings 	= sanitize_islist(key_bindings, list())
+	custom_emotes   = sanitize_is_full_emote_list(custom_emotes)
 	chem_macros 	= sanitize_islist(chem_macros, list())
 
 	mute_self_combat_messages	= sanitize_integer(mute_self_combat_messages, FALSE, TRUE, initial(mute_self_combat_messages))
@@ -229,6 +230,7 @@
 	windowflashing	= sanitize_integer(windowflashing, FALSE, TRUE, initial(windowflashing))
 	auto_fit_viewport= sanitize_integer(auto_fit_viewport, FALSE, TRUE, initial(auto_fit_viewport))
 	key_bindings	= sanitize_islist(key_bindings, list())
+	custom_emotes   = sanitize_is_full_emote_list(custom_emotes)
 	chem_macros		= sanitize_islist(chem_macros, list())
 	ghost_vision	= sanitize_integer(ghost_vision, FALSE, TRUE, initial(ghost_vision))
 	ghost_orbit		= sanitize_inlist(ghost_orbit, GLOB.ghost_orbits, initial(ghost_orbit))
@@ -266,6 +268,7 @@
 	WRITE_FILE(S["auto_fit_viewport"], auto_fit_viewport)
 	WRITE_FILE(S["menuoptions"], menuoptions)
 	WRITE_FILE(S["key_bindings"], key_bindings)
+	WRITE_FILE(S["custom_emotes"], custom_emotes)
 	WRITE_FILE(S["chem_macros"], chem_macros)
 	WRITE_FILE(S["ghost_vision"], ghost_vision)
 	WRITE_FILE(S["ghost_orbit"], ghost_orbit)
@@ -557,6 +560,41 @@
 	WRITE_FILE(S["exploit_record"], exploit_record)
 	WRITE_FILE(S["flavor_text"], flavor_text)
 
+	return TRUE
+
+///Serialize and save into a savefile the loadout manager
+/datum/preferences/proc/save_loadout_manager()
+	if(!path)
+		return FALSE
+	if(!fexists(path))
+		return FALSE
+	var/savefile/S = new /savefile(path)
+	if(!S)
+		return FALSE
+	loadout_manager = sanitize_loadout_manager(loadout_manager)
+	var/json_loadout_manager = jatum_serialize(loadout_manager)
+	S.cd = "/loadouts"
+	WRITE_FILE(S["loadouts_manager"], json_loadout_manager)
+	return TRUE
+
+///Load from a savefile and unserialize the loadout manager
+/datum/preferences/proc/load_loadout_manager()
+	if(!path)
+		return FALSE
+	if(!fexists(path))
+		return FALSE
+	var/savefile/S = new /savefile(path)
+	if(!S)
+		return FALSE
+	S.cd = "/loadouts"
+	var/json_loadout_manager = ""
+	READ_FILE(S["loadouts_manager"], json_loadout_manager)
+	if(!json_loadout_manager)
+		return FALSE
+	loadout_manager = jatum_deserialize(json_loadout_manager)
+	loadout_manager = sanitize_loadout_manager(loadout_manager)
+	if(loadout_manager.current_loadout)
+		loadout_manager.loadouts_list += loadout_manager.current_loadout //Has to be done since jatum cannot handle duplication well. Unless you fix jatum, don't touch this
 	return TRUE
 
 

@@ -186,6 +186,9 @@
 	///the 'abilities' available to a caste.
 	var/list/actions
 
+	///The iconstate for the xeno on the minimap
+	var/minimap_icon = "xeno"
+
 /mob/living/carbon/xenomorph
 	name = "Drone"
 	desc = "What the hell is THAT?"
@@ -208,7 +211,7 @@
 	appearance_flags = TILE_BOUND|PIXEL_SCALE|KEEP_TOGETHER
 	see_infrared = TRUE
 	hud_type = /datum/hud/alien
-	hud_possible = list(HEALTH_HUD_XENO, PLASMA_HUD, PHEROMONE_HUD, QUEEN_OVERWATCH_HUD, ARMOR_SUNDER_HUD)
+	hud_possible = list(HEALTH_HUD_XENO, PLASMA_HUD, PHEROMONE_HUD, QUEEN_OVERWATCH_HUD, ARMOR_SUNDER_HUD, XENO_TACTICAL_HUD)
 	buckle_flags = NONE
 	faction = FACTION_XENO
 	initial_language_holder = /datum/language_holder/xeno
@@ -243,7 +246,7 @@
 	var/sunder = 0 // sunder affects armour values and does a % removal before dmg is applied. 50 sunder == 50% effective armour values
 	var/fire_resist_modifier = 0
 
-	var/obj/structure/tunnel/start_dig = null
+	var/obj/structure/xeno/tunnel/start_dig = null
 	var/datum/ammo/xeno/ammo = null //The ammo datum for our spit projectiles. We're born with this, it changes sometimes.
 	var/pslash_delay = 0
 
@@ -269,7 +272,7 @@
 
 	var/list/datum/action/xeno_abilities = list()
 	var/datum/action/xeno_action/activable/selected_ability
-	var/selected_resin = /obj/structure/bed/nest //which resin structure to build when we secrete resin
+	var/selected_resin = /turf/closed/wall/resin/regenerating //which resin structure to build when we secrete resin
 	var/selected_reagent = /datum/reagent/toxin/xeno_hemodile //which reagent to slash with using reagent slash
 
 	//Naming variables
@@ -312,8 +315,11 @@
 	var/savage_used = FALSE
 
 	// *** Ravager vars *** //
-	var/ignore_pain = FALSE // when true the rav will not go into crit or take crit damage.
-	var/ignore_pain_state = 0 // how far "dead" the rav has got while ignoring pain.
+	/// when true the rav will not go into crit or take crit damage.
+	var/endure = FALSE
+
+	// *** Carrier vars *** //
+	var/selected_hugger_type = /obj/item/clothing/mask/facehugger
 
 	//Notification spam controls
 	var/recent_notice = 0
@@ -321,7 +327,7 @@
 
 	var/fire_luminosity = 0 //Luminosity of the current fire while burning
 
-	///The xenos/silo currently tracked by the xeno_tracker arrow
+	///The xenos/silo/nuke currently tracked by the xeno_tracker arrow
 	var/tracked
 
 	COOLDOWN_DECLARE(xeno_health_alert_cooldown)
